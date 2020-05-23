@@ -91,7 +91,7 @@ This will wrap each **server** tag found for current development environment int
 - [Lucinda\NoSQL\ConnectionSingleton](#class-connectionsingleton): if your application uses a single NoSQL vendors per environment (the usual case)
 - [Lucinda\NoSQL\ConnectionFactory](#class-connectionfactory): if your application uses multiple NoSQL vendors per environment (in which case **server** tags must have *name* attribute)
 
-Both classes above insure a single [Lucinda\NoSQL\Driver](#interface-driver) is reused per server throughout session (input-output request flow) duration. If vendor associated is not embedded (APC/APCu) and requires a server, same object also implements [Lucinda\NoSQL\Server](#interface-server), which can be used in connection management.
+Both classes above insure a single [Lucinda\NoSQL\Driver](#interface-driver) is reused per server throughout session (input-output request flow) duration when . If vendor associated is not embedded (APC/APCu) and requires a server, same object also implements [Lucinda\NoSQL\Server](#interface-server), which can be used in connection management.
 
 There may be situations when abstraction provided by [Lucinda\NoSQL\Driver](#interface-driver) is not enough and you need to run *specific* operations known only to respective vendor. You can do so by extra **getDriver** method, available unless vendor is APC/APCu:
 
@@ -166,14 +166,12 @@ if ($redisDriver->ping()) {
 
 ### Class ConnectionSingleton
 
-[Lucinda\NoSQL\ConnectionSingleton](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionSingleton.php) defines following public methods:
-
+[Lucinda\NoSQL\ConnectionSingleton](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionSingleton.php) class insures a single [Lucinda\NoSQL\Driver](#interface-driver) is used per session. Has following public static methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
 | static setDataSource | [Lucinda\NoSQL\DataSource](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/DataSource.php) | void | Sets data source detected beforehand. Done automatically by API! |
 | static getInstance | void | [Lucinda\NoSQL\Driver](#interface-driver) | Gets driver from data source, opens connection in case object implements [Lucinda\NoSQL\Server](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Server.php) and returns it for later querying. Throws [Lucinda\NoSQL\ConnectionException](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionException.php) if connection fails! |
-| __destruct | void | void | Automatically closes connection when it becomes idle. Done automatically by API! |
 
 Usage example:
 
@@ -184,13 +182,12 @@ $driver->set("hello", "world"); // sets in store a "hello" key whose value is "w
 
 ### Class ConnectionFactory
 
-[Lucinda\NoSQL\ConnectionFactory](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionFactory.php) defines following public methods:
+[Lucinda\NoSQL\ConnectionFactory](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionFactory.php) class insures a single [Lucinda\NoSQL\Driver](#interface-driver) is used per session and server name. Has following public static methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
 | static setDataSource | string $serverName, [Lucinda\NoSQL\DataSource](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/DataSource.php) | void | Sets data source detected beforehand per value of *name* attribute @ **server** tag. Done automatically by API! |
 | static getInstance | string $serverName | [Lucinda\NoSQL\Driver](#interface-driver) | Gets driver from data source based on value of *name* attribute @ **server** tag, opens connection in case object implements [Lucinda\NoSQL\Server](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Server.php) and returns it for later querying.  Throws [Lucinda\NoSQL\ConnectionException](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionException.php) if connection fails! |
-| __destruct | void | void | Automatically closes each connection when it becomes idle. Done automatically by API! |
 
 Usage example:
 
@@ -200,7 +197,7 @@ $driver->get("hello"); // gets value of "hello" key from store
 ```
 ### Interface Server
 
-[Lucinda\NoSQL\Server](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Server.php):
+[Lucinda\NoSQL\Server](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Server.php) interface defines operations to manage connection to key-value store servers via following methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
@@ -211,7 +208,7 @@ Above methods HANDLED BY API AUTOMATICALLY, so **to be used only in niche situat
 
 ### Interface Driver
 
-Following [Lucinda\NoSQL\Driver](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Driver.php) methods are relevant for querying:
+[Lucinda\NoSQL\Driver](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Driver.php) interface defines operations to perform on key-value stores via following methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
