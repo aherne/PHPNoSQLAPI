@@ -12,9 +12,7 @@ Table of contents:
 
 ## About 
 
-This API is a ultra light weight [Data Access Layer](https://en.wikipedia.org/wiki/Data_access_layer) that acts like an equivalent of [PDO](https://www.php.net/manual/en/book.pdo.php) for NoSQL [key-value databases](https://en.wikipedia.org/wiki/Key-value_database) (aka key-value stores). As a data access layer, its purpose is to to shield complexity of working with different NoSQL vendors and provide a simple as well as elegant interface for connecting and querying.
-
-At this time, following vendors are supported:
+This API is a ultra light weight [Data Access Layer](https://en.wikipedia.org/wiki/Data_access_layer) that acts like an equivalent of [PDO](https://www.php.net/manual/en/book.pdo.php) for NoSQL [key-value databases](https://en.wikipedia.org/wiki/Key-value_database) (aka key-value stores). As a data access layer, its purpose is to to shield complexity of working with different NoSQL vendors and provide a simple as well as elegant interface for connecting and querying. At this time, following vendors are supported:
 
 - **APC**: an extremely fast database without persistence abilities, handled directly by PHP that uses opcode cache and data store
 - **APCu**: an extremely fast database without persistence abilities, handled directly by PHP that uses only data store
@@ -29,13 +27,13 @@ The whole idea of working with NoSQL databases (vendors) is reduced to following
 
 - **[configuration](#configuration)**: setting up an XML file where NoSQL vendors used by your site are configured per development environment
 - **[execution](#execution)**: using [Lucinda\NoSQL\Wrapper](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Wrapper.php) to read above XML based on development environment, compile [Lucinda\NoSQL\DataSource](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/DataSource.php) object(s) storing connection information and inject them statically into
-[Lucinda\NoSQL\ConnectionSingleton](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionSingleton.php) or [Lucinda\NoSQL\ConnectionFactory](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionFactory.php) classes
+[Lucinda\NoSQL\ConnectionSingleton](#class-connectionsingleton) or [Lucinda\NoSQL\ConnectionFactory](#class-connectionfactory) classes
 
 API is fully PSR-4 compliant, only requiring PHP7.1+ interpreter, SimpleXML extension and official extension for each vendor. To quickly see how it works, check:
 
 - **[installation](#installation)**: describes how to install API on your computer, in light of steps above
 - **[unit tests](#unit-tests)**: API has 100% Unit Test coverage, using [UnitTest API](https://github.com/aherne/unit-testing) instead of PHPUnit for greater flexibility
-- **[examples](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/tests/)**: shows a deep example of API functionality based on unit tests
+- **[examples](#examples)**: shows a deep example of API functionality
 
 ## Configuration
 
@@ -90,12 +88,12 @@ new Lucinda\NoSQL\Wrapper(simplexml_load_file(XML_FILE_NAME), DEVELOPMENT_ENVIRO
 
 This will wrap each **server** tag found for current development environment into [Lucinda\NoSQL\DataSource](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/DataSource.php) objects and inject them statically into:
 
-- [Lucinda\NoSQL\ConnectionSingleton](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionSingleton.php): if your application uses a single NoSQL vendors per environment (the usual case)
-- [Lucinda\NoSQL\ConnectionFactory](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionFactory.php): if your application uses multiple NoSQL vendors per environment (in which case **server** tags must have *name* attribute)
+- [Lucinda\NoSQL\ConnectionSingleton](#class-connectionsingleton): if your application uses a single NoSQL vendors per environment (the usual case)
+- [Lucinda\NoSQL\ConnectionFactory](#class-connectionfactory): if your application uses multiple NoSQL vendors per environment (in which case **server** tags must have *name* attribute)
 
-Both classes above insure a single [Lucinda\NoSQL\Driver](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Driver.php) is reused per server throughout session (input-output request flow) duration. If vendor associated is not embedded (APC/APCu) and requires a server, same object also implements [Lucinda\NoSQL\Server](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Server.php), which can be used in connection management.
+Both classes above insure a single [Lucinda\NoSQL\Driver](#interface-driver) is reused per server throughout session (input-output request flow) duration. If vendor associated is not embedded (APC/APCu) and requires a server, same object also implements [Lucinda\NoSQL\Server](#interface-server), which can be used in connection management.
 
-There may be situations when abstraction provided by [Lucinda\NoSQL\Driver](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Driver.php) is not enough and you need to run *specific* operations known only to respective vendor. You can do so by extra **getDriver** method, available unless vendor is APC/APCu:
+There may be situations when abstraction provided by [Lucinda\NoSQL\Driver](#interface-driver) is not enough and you need to run *specific* operations known only to respective vendor. You can do so by extra **getDriver** method, available unless vendor is APC/APCu:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
@@ -139,7 +137,7 @@ For tests and examples, check following files/folders in API sources:
 
 ### Working With Shared Driver
 
-Example:
+Usage example:
 
 ```php
 $driver = Lucinda\NoSQL\ConnectionSingleton::getInstance();
@@ -174,7 +172,7 @@ if ($redisDriver->ping()) {
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
 | static setDataSource | [Lucinda\NoSQL\DataSource](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/DataSource.php) | void | Sets data source detected beforehand. Done automatically by API! |
-| static getInstance | void | [Lucinda\NoSQL\Driver](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Driver.php) | Gets driver from data source, opens connection in case object implements [Lucinda\NoSQL\Server](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Server.php) and returns it for later querying. Throws [Lucinda\NoSQL\ConnectionException](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionException.php) if connection fails! |
+| static getInstance | void | [Lucinda\NoSQL\Driver](#interface-driver) | Gets driver from data source, opens connection in case object implements [Lucinda\NoSQL\Server](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Server.php) and returns it for later querying. Throws [Lucinda\NoSQL\ConnectionException](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionException.php) if connection fails! |
 | __destruct | void | void | Automatically closes connection when it becomes idle. Done automatically by API! |
 
 Usage example:
@@ -191,7 +189,7 @@ $driver->set("hello", "world"); // sets in store a "hello" key whose value is "w
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
 | static setDataSource | string $serverName, [Lucinda\NoSQL\DataSource](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/DataSource.php) | void | Sets data source detected beforehand per value of *name* attribute @ **server** tag. Done automatically by API! |
-| static getInstance | string $serverName | [Lucinda\NoSQL\Driver](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Driver.php) | Gets driver from data source based on value of *name* attribute @ **server** tag, opens connection in case object implements [Lucinda\NoSQL\Server](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Server.php) and returns it for later querying.  Throws [Lucinda\NoSQL\ConnectionException](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionException.php) if connection fails! |
+| static getInstance | string $serverName | [Lucinda\NoSQL\Driver](#interface-driver) | Gets driver from data source based on value of *name* attribute @ **server** tag, opens connection in case object implements [Lucinda\NoSQL\Server](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/Server.php) and returns it for later querying.  Throws [Lucinda\NoSQL\ConnectionException](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/ConnectionException.php) if connection fails! |
 | __destruct | void | void | Automatically closes each connection when it becomes idle. Done automatically by API! |
 
 Usage example:
@@ -224,18 +222,5 @@ Following [Lucinda\NoSQL\Driver](https://github.com/aherne/php-nosql-data-access
 | decrement | string $key, int $offset = 1 | int | Decrements value in store by existing key and offset, then returns it. Throws [Lucinda\NoSQL\KeyNotFoundException](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/KeyNotFoundException.php) if key doesn't exist in store! |
 | delete | string $key | void | Deletes value from store by existing key. Throws [Lucinda\NoSQL\KeyNotFoundException](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/KeyNotFoundException.php) if key doesn't exist in store! |
 | flush | void | void | Clears all values in store. |
-
-Example:
-
-```php
-$driver = Lucinda\NoSQL\ConnectionSingleton::getInstance();
-$driver->set("i", 1, 10); // sets key i as 1 for 10 seconds
-$driver->get("i"); // returns 1
-$driver->contains("i"); // returns true
-$driver->increment("i"); // returns 2
-$driver->decrement("i"); // returns 1
-$driver->delete("i"); // deletes key i from store
-$driver->flush(); // clears all value in store
-```
 
 If any of above operations fails due to server issues, a [Lucinda\NoSQL\OperationFailedException](https://github.com/aherne/php-nosql-data-access-api/blob/v3.0.0/src/OperationFailedException.php) is thrown!
